@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS copia_actualizados_docente;
 DROP TABLE IF EXISTS proyecto;
 DROP TABLE IF EXISTS docente;
 
--- Crear la tabla para docentes usando el CREATE TABLE y otorgarle sus campos y restricciones
+-- Crear la tabla para docentes usando el CREATE TABLE y otorgarle sus campos y restricciones, se define docente_id como llave primaria
 CREATE TABLE docente (
   docente_id        INT AUTO_INCREMENT PRIMARY KEY,
   numero_documento  VARCHAR(20)  NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE docente (
   CONSTRAINT uq_docente_documento UNIQUE (numero_documento),
   CONSTRAINT ck_docente_anios CHECK (anios_experiencia >= 0)
 ) ENGINE=InnoDB;
--- Crear la tabla para proyectos usando el CREATE TABLE y otorgarle sus campos y restricciones
+-- Crear la tabla para proyectos usando el CREATE TABLE y otorgarle sus campos y restricciones, se define proyecto_id como llave primaria
 CREATE TABLE proyecto (
   proyecto_id      INT AUTO_INCREMENT PRIMARY KEY,
   nombre           VARCHAR(120) NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE proyecto (
     ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
--- Creación de tabla para actualizaciones de docentes CREATE TABLE
+-- Creación de tabla para la auditoria de actualizaciones de docentes usando CREATE TABLE
 CREATE TABLE copia_actualizados_docente (
   auditoria_id       INT AUTO_INCREMENT PRIMARY KEY,
   docente_id         INT NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE copia_actualizados_docente (
   accion_fecha       DATETIME     NOT NULL DEFAULT (UTC_TIMESTAMP()),
   usuario_sql        VARCHAR(128) NOT NULL DEFAULT (CURRENT_USER())
 ) ENGINE=InnoDB;
--- Creación de tabla para eliminaciones de docentes usando el CREATE TABLE
+-- Creación de tabla para la auditoria de eliminaciones de docentes usando el CREATE TABLE
 CREATE TABLE copia_eliminados_docente (
   auditoria_id       INT AUTO_INCREMENT PRIMARY KEY,
   docente_id         INT NOT NULL,
@@ -78,17 +78,17 @@ CREATE TABLE copia_eliminados_docente (
 -- =========================================
 
 
--- Se eliminan los procedimientos almacenados para la tabla docente con el DROP en caso de que existan para crear nuevos y se delimitan usando $$ 
+-- Se eliminan los procedimientos almacenados para la tabla docente con el DROP en caso de que existan para crear nuevos
 DROP PROCEDURE IF EXISTS sp_docente_crear;
 DROP PROCEDURE IF EXISTS sp_docente_leer;
 DROP PROCEDURE IF EXISTS sp_docente_actualizar;
 DROP PROCEDURE IF EXISTS sp_docente_eliminar;
 
-DELIMITER $$
-
 -- Con CREATE PROCEDURE se crean los procedimientos para la tabla de docentes con el CREATE PROCEDURE, definiendo sus parámentros
 
 -- Para crear un docente
+DELIMITER $$
+
 CREATE PROCEDURE sp_docente_crear(
   IN p_numero_documento VARCHAR(20),
   IN p_nombres          VARCHAR(120),
@@ -257,3 +257,4 @@ DELIMITER ;
 -- Se crean dos índices sugeridos para optimizar consultas usando el CREATE INDEX y se especifican las columnas con el ON
 CREATE INDEX ix_proyecto_docente ON proyecto(docente_id_jefe);
 CREATE INDEX ix_docente_documento ON docente(numero_documento);
+
