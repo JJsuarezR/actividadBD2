@@ -17,6 +17,7 @@ DROP TABLE IF EXISTS copia_actualizados_docente;
 DROP TABLE IF EXISTS proyecto;
 DROP TABLE IF EXISTS docente;
 
+-- Para crear las tablas se especifica el tipo de dato de cada campo con el varchar, int, dato, decimal, etc
 -- Crear la tabla para docentes usando el CREATE TABLE y otorgarle sus campos y restricciones, se define docente_id como llave primaria
 CREATE TABLE docente (
   docente_id        INT AUTO_INCREMENT PRIMARY KEY,
@@ -86,7 +87,7 @@ DROP PROCEDURE IF EXISTS sp_docente_eliminar;
 
 -- Con CREATE PROCEDURE se crean los procedimientos para la tabla de docentes con el CREATE PROCEDURE, definiendo sus parámentros
 
--- Para crear un docente
+-- Para crear un docente se crea el procedimiento, se especifican los valores que se deben llenar, y usa el insert into para ingresas los valores en la tabla 
 DELIMITER $$
 
 CREATE PROCEDURE sp_docente_crear(
@@ -102,14 +103,14 @@ BEGIN
   VALUES (p_numero_documento, p_nombres, p_titulo, IFNULL(p_anios_experiencia,0), p_direccion, p_tipo_docente);
   SELECT LAST_INSERT_ID() AS docente_id_creado;
 END$$
-
--- Para leer un docente
+ 
+-- Para leer un docente crea el procedimiento y con el where se selecciona la id a buscar
 CREATE PROCEDURE sp_docente_leer(IN p_docente_id INT)
 BEGIN
   SELECT * FROM docente WHERE docente_id = p_docente_id;
 END$$
 
--- Para actualizar un docente
+-- Para actualizar un docente crea el procedimiento y actualiza los datos seleccionando con where la id a actualizar
 CREATE PROCEDURE sp_docente_actualizar(
   IN p_docente_id       INT,
   IN p_numero_documento VARCHAR(20),
@@ -132,7 +133,7 @@ BEGIN
   SELECT * FROM docente WHERE docente_id = p_docente_id;
 END$$
 
--- Para eliminar un docente
+-- Para eliminar un docente, se crea el procedimiento y con el where se especifica la id a eliminar
 CREATE PROCEDURE sp_docente_eliminar(IN p_docente_id INT)
 BEGIN
   DELETE FROM docente WHERE docente_id = p_docente_id;
@@ -149,7 +150,7 @@ DROP PROCEDURE IF EXISTS sp_proyecto_actualizar;
 DROP PROCEDURE IF EXISTS sp_proyecto_eliminar;
 
 -- Con CREATE PROCEDURE se crean los procedimientos para la tabla de proyecto con el CREATE PROCEDURE, definiendo sus parámentros
--- Para crear un proyecto
+-- Para crear un proyecto se crea el procedimiento, se especifican los valores que se deben llenar, y usa el insert into para ingresas los valores en la tabla   
 CREATE PROCEDURE sp_proyecto_crear(
   IN p_nombre           VARCHAR(120),
   IN p_descripcion      VARCHAR(400),
@@ -165,7 +166,7 @@ BEGIN
   SELECT LAST_INSERT_ID() AS proyecto_id_creado;
 END$$
 
--- Para leer un proyecto
+-- Para leer un proyecto crea el procedimiento y selecciona los datos que se quieren llamar de la tabla de proyectos y con el where se selecciona la id a buscar
 CREATE PROCEDURE sp_proyecto_leer(IN p_proyecto_id INT)
 BEGIN
   SELECT p.*, d.nombres AS nombre_docente_jefe
@@ -174,7 +175,7 @@ BEGIN
   WHERE p.proyecto_id = p_proyecto_id;
 END$$
 
--- Para actualizar un proyecto
+-- Para actualizar un proyecto, crea el procedimiento y actualiza los datos seleccionando con where la id a actualizar
 CREATE PROCEDURE sp_proyecto_actualizar(
   IN p_proyecto_id      INT,
   IN p_nombre           VARCHAR(120),
@@ -199,7 +200,7 @@ BEGIN
   CALL sp_proyecto_leer(p_proyecto_id);
 END$$
 
--- Para eliminar un proyecto
+-- Para eliminar un proyecto, crea el procedimiento y elimina de la tabla proyecto seleccionando con where la id a eliminar
 CREATE PROCEDURE sp_proyecto_eliminar(IN p_proyecto_id INT)
 BEGIN
   DELETE FROM proyecto WHERE proyecto_id = p_proyecto_id;
@@ -230,7 +231,7 @@ END$$
 -- Triggers de auditoría DOCENTE
 -- ============================
 
---  Con el CREATE TRIGGER se crea el trigger para que cuando se actualice un docente se guarde una copia en la tabla de auditoría
+--  Con el CREATE TRIGGER se crea el trigger para que cuando se actualice un docente se guarde una copia en la tabla de auditoría, despues de actualizar un docente se insertan en copia_actualizados_docente los valores nuevos
 CREATE TRIGGER tr_docente_after_update
 AFTER UPDATE ON docente
 FOR EACH ROW
@@ -241,7 +242,7 @@ BEGIN
     (NEW.docente_id, NEW.numero_documento, NEW.nombres, NEW.titulo, NEW.anios_experiencia, NEW.direccion, NEW.tipo_docente);
 END$$
 
--- Con el CREATE TRIGGER se crea el trigger para que cuando se elimine un docente se guarde una copia en la tabla de auditoría
+-- Con el CREATE TRIGGER se crea el trigger para que cuando se elimine un docente se guarde una copia en la tabla de auditoría, despues de borrar un docente, se insertan en la tabla copia_eliminados_docente los valores antiguos.
 CREATE TRIGGER tr_docente_after_delete
 AFTER DELETE ON docente
 FOR EACH ROW
@@ -257,4 +258,5 @@ DELIMITER ;
 -- Se crean dos índices sugeridos para optimizar consultas usando el CREATE INDEX y se especifican las columnas con el ON
 CREATE INDEX ix_proyecto_docente ON proyecto(docente_id_jefe);
 CREATE INDEX ix_docente_documento ON docente(numero_documento);
+
 
